@@ -104,3 +104,36 @@ describe('pick the most liked', () =>{
             )
     })
 })
+
+describe('mostBlogs', () => {
+    test('mostBlogs from 0', () => {
+        expect(listHelper.mostBlogs([]))
+            .toEqual(undefined)
+    })
+
+    test('mostBlogs from 1', () => {
+        const testList = [
+            {
+                title: "test title",
+                author: "noone",
+                url: "www.google.com",
+                likes: 122
+            },
+            {
+                title: "1",
+                author: "2",
+                url: "www.google.com",
+                likes: 1111
+            },
+            {
+                title: "12",
+                author: "2",
+                url: "www.google.com",
+                likes: 1111
+            }
+        ]
+
+        expect(listHelper.mostBlogs(testList))
+            .toEqual({author: "2", blog: 2})
+    })
+})
