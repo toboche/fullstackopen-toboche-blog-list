@@ -41,29 +41,53 @@ const mostBlogs = (blogs) => {
         reducer,
         new Map()
     )
-    console.log(reduced);
 
     reduced[Symbol.iterator] = function* () {
         yield* [...this.entries()].sort((a, b) => a[1] - b[1]);
     }
 
     var max = null
-    for (let [key, value] of reduced) {     // get data sorted
+    for (let [key, value] of reduced) {
         max = {
             author:key,
             blog: value
         }
     }
-    // console.log('max');
-    // const ordered = {...reduced}
-    // console.log(ordered);
-    // console.log(ordered[0]);
+    return max
+}
 
-    // reduced.map(it=> it[0])
+const mostLikes = (blogs) => {
+    if(blogs.length === 0){
+        return undefined
+    }
+    const reducer = (acc, value) =>{
+        const author = value.author
+        const current = acc.get(author)
+        const likes = value.likes
+        if(current === undefined){
+            acc.set(author, likes)
+        }else {
+            acc.set(author, current + likes)
+        }
+        return acc
+    }
 
-    // const max = reduced
-    //     .sort((a,b) => a[0] - b[0])
-    //     [0]
+    const reduced = blogs.reduce(
+        reducer,
+        new Map()
+    )
+
+    reduced[Symbol.iterator] = function* () {
+        yield* [...this.entries()].sort((a, b) => a[1] - b[1]);
+    }
+
+    var max = null
+    for (let [key, value] of reduced) {
+        max = {
+            author:key,
+            blog: value
+        }
+    }
     return max
 }
 
@@ -71,5 +95,6 @@ const mostBlogs = (blogs) => {
     dummy,
     totalLikes,
     favoriteBlog,
-    mostBlogs
+    mostBlogs,
+    mostLikes
   }

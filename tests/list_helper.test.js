@@ -137,3 +137,62 @@ describe('mostBlogs', () => {
             .toEqual({author: "2", blog: 2})
     })
 })
+
+describe('mostLikes', () => {
+    test('mostBlogs from 0', () => {
+        expect(listHelper.mostBlogs([]))
+            .toEqual(undefined)
+    })
+
+    test('mostLikes from 1', () => {
+        const testList = [
+            {
+                title: "test title",
+                author: "1",
+                url: "www.google.com",
+                likes: 122
+            },
+            {
+                title: "1",
+                author: "2",
+                url: "www.google.com",
+                likes: 1
+            },
+            {
+                title: "12",
+                author: "2",
+                url: "www.google.com",
+                likes: 11
+            }
+        ]
+
+        expect(listHelper.mostLikes(testList))
+            .toEqual({author: "1", blog: 122})
+    })
+
+    test('mostLikes from 2', () => {
+        const testList = [
+            {
+                title: "test title",
+                author: "1",
+                url: "www.google.com",
+                likes: 122
+            },
+            {
+                title: "1",
+                author: "2",
+                url: "www.google.com",
+                likes: 122
+            },
+            {
+                title: "12",
+                author: "2",
+                url: "www.google.com",
+                likes: 1
+            }
+        ]
+
+        expect(listHelper.mostLikes(testList))
+            .toEqual({author: "2", blog: 123})
+    })
+})
