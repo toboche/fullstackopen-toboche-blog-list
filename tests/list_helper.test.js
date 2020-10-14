@@ -38,8 +38,69 @@ describe('total likes', () => {
                 author: "noone",
                 url: "www.google.com",
                 likes: 1
-        }
+            }
         ]
         expect(listHelper.totalLikes(testList)).toBe(123)
+    })
+})
+
+describe('pick the most liked', () =>{
+    test('pick one', () => {
+        const testList = [
+            {
+                    title: "test title",
+                    author: "noone",
+                    url: "www.google.com",
+                    likes: 122
+            },
+            {
+                title: "1",
+                author: "2",
+                url: "www.google.com",
+                likes: 1111
+            }
+        ]
+
+        expect(listHelper.favoriteBlog(testList))
+            .toEqual(
+                {
+                    title: "1",
+                    author: "2",
+                    likes: 1111
+                  }
+            )
+    })
+
+    test('pick first', () => {
+        const testList = [
+            {
+                title: "1",
+                author: "2",
+                url: "www.google.com",
+                likes: 1111
+            },
+            {
+                    title: "test title",
+                    author: "noone",
+                    url: "www.google.com",
+                    likes: 122
+            }
+        ]
+        
+        expect(listHelper.favoriteBlog(testList))
+            .toEqual(
+                {
+                    title: "1",
+                    author: "2",
+                    likes: 1111
+                  }
+            )
+    })
+
+    test('handle empty', () => {
+        expect(listHelper.favoriteBlog([]))
+            .toEqual(
+                undefined
+            )
     })
 })
