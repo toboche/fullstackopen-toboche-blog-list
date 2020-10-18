@@ -59,7 +59,7 @@ test('blogs are returned as json', async () => {
         likes: 11
       }
 
-      await api.post('/api/blogs')
+      const response = await api.post('/api/blogs')
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
