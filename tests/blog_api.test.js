@@ -72,6 +72,26 @@ test('blogs are returned as json', async () => {
         .toContainEqual(newBlog)
   })
 
+  test('likes default to 0', async () => {
+    const newBlog = {
+      title: "1 new title",
+      author: "somebody",
+      url: "www.asd.com"
+    }
+
+    const response = await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const currentBlogsInDb = await helper.blogsInDb()
+    expect(currentBlogsInDb)
+      .toHaveLength(helper.initialBlogs.length + 1)
+
+    expect(response.body.map(b => helper.mapToNoIds(b)))
+      .toContainEqual({...newBlog, likes: 0})
+})
+
   afterAll(() => {
     mongoose.connection.close()
   })

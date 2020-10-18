@@ -15,8 +15,12 @@ blogsRouter.get('/:id', async (request, response) => {
   }
 })
   
-blogsRouter.post('/', async (request, response) => {
-  const blog = new Blog(request.body)
+blogsRouter.post('/', async (request, response) => { 
+  let blogData = request.body
+  if(!request.body.likes){
+    blogData = {...blogData, likes: 0}
+  }
+  const blog = new Blog(blogData)
 
   await blog.save()
   const allBlogs =  await Blog.find({})
