@@ -24,15 +24,23 @@ test('blogs are returned as json', async () => {
   })
   
   test('there are two blogs', async () => {
-    const response = await api.get('/api/notes')
+    const response = await api.get('/api/blogs')
   
     expect(response.body).toHaveLength(helper.initialBlogs.length)
   })
   
   test('the first blog is about HTTP methods', async () => {
-    const response = await api.get('/api/notes')
+    const response = await api.get('/api/blogs')
   
-    expect(response.body[0]).toConainEqual(helper.initialBlogs[0])
+    expect(response.body.map(blog => {
+        return {
+            title: blog.title,
+            author: blog.author,
+            url: blog.url,
+            likes: blog.likes
+          }
+    }))
+    .toContainEqual(helper.initialBlogs[0])
   })
 
   afterAll(() => {
