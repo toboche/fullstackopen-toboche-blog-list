@@ -44,6 +44,7 @@ test('blogs are returned as json', async () => {
     const response = await api.get(`/api/blogs/${id}`)
         .expect(200)
     
+    expect(response.body.id).toBeDefined()
     const mappedBlog = helper.mapToNoIds(response.body)
     expect(mappedBlog)
         .toEqual(helper.initialBlogs[0])
