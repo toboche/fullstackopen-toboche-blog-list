@@ -11,11 +11,10 @@ const { response } = require('express')
 
 beforeEach(async () => {
     await Blog.deleteMany({})
-    await Promise.all(
-        helper.initialBlogs
-            .map((blogData) => new Blog(blogData))
-            .map(blog => blog.save())
-    )
+    for (let blogData of helper.initialBlogs){
+        let blog = new Blog(blogData)
+        await blog.save()
+    }
 })
 
 test('blogs are returned as json', async () => {
@@ -90,6 +89,30 @@ test('blogs are returned as json', async () => {
 
     expect(response.body.map(b => helper.mapToNoIds(b)))
       .toContainEqual({...newBlog, likes: 0})
+})
+
+test('no title results in 400 when posting', async () => {
+    const newBlog = {
+      author: "somebody",
+      url: "www.asd.com",
+      likes: 0
+    }
+
+    const response = await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+})
+
+test('no url results in 400 when posting', async () => {
+    const newBlog = {
+      title: "asdasda",
+      author: "somebody",
+      likes: 0
+    }
+
+    const response = await api.post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
 })
 
   afterAll(() => {
