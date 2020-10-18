@@ -7,6 +7,7 @@ const api = supertest(app)
 
 const Blog = require('../models/blog')
 const { report } = require('../app')
+const { response } = require('express')
 
 beforeEach(async () => {
     await Blog.deleteMany({})
@@ -66,6 +67,9 @@ test('blogs are returned as json', async () => {
       const currentBlogsInDb = await helper.blogsInDb()
       expect(currentBlogsInDb)
         .toHaveLength(helper.initialBlogs.length + 1)
+
+      expect(response.body.map(b => helper.mapToNoIds(b)))
+        .toContainEqual(newBlog)
   })
 
   afterAll(() => {
