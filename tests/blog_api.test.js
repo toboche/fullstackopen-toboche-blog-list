@@ -40,7 +40,7 @@ test('blogs are returned as json', async () => {
 
   test('the first blog is as expected when using id', async () => {
     const currentBlogs = await helper.blogsInDb()
-    const id = currentBlogs[0]._id
+    const id = currentBlogs[0].id
     const response = await api.get(`/api/blogs/${id}`)
         .expect(200)
     
