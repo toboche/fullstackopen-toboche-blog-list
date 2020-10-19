@@ -115,6 +115,20 @@ test('no url results in 400 when posting', async () => {
       .expect(400)
 })
 
+describe('delete tests', () => {
+  test('deleting the first blog works', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .expect(200)
+  
+    const latestBlogsInDb = await helper.blogsInDb()
+    expect(latestBlogsInDb)
+        .toHaveLength(helper.initialBlogs.length - 1)
+  })
+
+})
+
   afterAll(() => {
     mongoose.connection.close()
   })
