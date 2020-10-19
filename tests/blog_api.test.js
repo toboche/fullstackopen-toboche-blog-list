@@ -142,6 +142,29 @@ describe('delete tests', () => {
   })
 })
 
+describe('update tests', () => {
+  test('updating exiting works', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const expectedLikes = 333
+    const response = await api.put(`/api/blogs/${idToDelete}`)
+        .send({likes: expectedLikes})
+        .expect(200)
+  
+    const latestBlogsInDb = await helper.blogsInDb()
+    expect(latestBlogsInDb[0].likes)
+        .toEqual(expectedLikes)
+  })
+
+  test('updating exiting fails when no likes', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.put(`/api/blogs/${idToDelete}`)
+        .send({})
+        .expect(404)
+  })
+})
+
   afterAll(() => {
     mongoose.connection.close()
   })
