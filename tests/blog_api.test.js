@@ -127,6 +127,13 @@ describe('delete tests', () => {
         .toHaveLength(helper.initialBlogs.length - 1)
   })
 
+  test('noo id to delete whatsoever', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.delete(`/api/blogs`)
+        .expect(404)
+  })
+
 })
 
   afterAll(() => {
