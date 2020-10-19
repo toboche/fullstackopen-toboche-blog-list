@@ -116,6 +116,20 @@ test('no url results in 400 when posting', async () => {
 })
 
 describe('delete tests', () => {
+  test('inexisting id', async () => {
+    const idToDelete = '2342342aaa'
+
+    const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .expect(404)
+  })
+
+  test('no id to delete whatsoever', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.delete(`/api/blogs`)
+        .expect(404)
+  })
+
   test('deleting the first blog works', async () => {
     const blogsInDb = await helper.blogsInDb()
     const idToDelete = blogsInDb[0].id
@@ -126,14 +140,6 @@ describe('delete tests', () => {
     expect(latestBlogsInDb)
         .toHaveLength(helper.initialBlogs.length - 1)
   })
-
-  test('noo id to delete whatsoever', async () => {
-    const blogsInDb = await helper.blogsInDb()
-    const idToDelete = blogsInDb[0].id
-    const response = await api.delete(`/api/blogs`)
-        .expect(404)
-  })
-
 })
 
   afterAll(() => {

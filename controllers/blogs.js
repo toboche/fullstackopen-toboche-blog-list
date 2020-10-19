@@ -33,7 +33,11 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   const idToDelete = request.params.id
-  await Blog.deleteOne({_id: idToDelete})
+  try{
+    await Blog.deleteOne({_id: idToDelete})
+  }catch (e){
+    response.status(404).end()
+  }
   response.status(200).end()
 })
 
