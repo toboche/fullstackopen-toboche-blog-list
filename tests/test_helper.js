@@ -1,5 +1,6 @@
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const jwt = require('jsonwebtoken')
 
 const initialBlogs = [
   {
@@ -59,6 +60,16 @@ const saveNewUser = async () => {
   return await userToSave.save()
 }
 
+const getUserToken = async () => {
+  const newSavedUser = await saveNewUser()
+  const userForToken = {
+    username: newSavedUser.username,
+    id: newSavedUser._id,
+  }
+  const token = jwt.sign(userForToken, process.env.SECRET)
+  return token
+}
+
 module.exports = {
   initialBlogs, 
   nonExistingId, 
@@ -66,5 +77,6 @@ module.exports = {
   mapToNoIds, 
   usersInDb,
   newUser,
-  saveNewUser
+  saveNewUser,
+  getUserToken
 }

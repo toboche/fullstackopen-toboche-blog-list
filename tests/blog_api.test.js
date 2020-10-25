@@ -3,6 +3,7 @@ const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
@@ -53,17 +54,17 @@ test('blogs are returned as json', async () => {
   })
 
   test('a valid blog can be added', async () => {
-      const newSavedUser = await helper.saveNewUser()
+      const token = await helper.getUserToken()
 
       const newBlog = {
         title: "1 new title",
         author: "somebody",
         url: "www.asd.com",
-        likes: 11,
-        userId: newSavedUser._id
+        likes: 11
       }
 
       const response = await api.post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
@@ -78,16 +79,18 @@ test('blogs are returned as json', async () => {
   })
 
   test('likes default to 0', async () => {
-    const newSavedUser = await helper.saveNewUser()
-
+    const users = await User.find({})
+    console.log('users ', users);
+    const token = await helper.getUserToken()
+    
     const newBlog = {
       title: "1 new title",
       author: "somebody",
       url: "www.asd.com",
-      userId: newSavedUser._id
     }
 
     const response = await api.post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
       .send(newBlog)
       .expect(201)
       .expect('Content-Type', /application\/json/)

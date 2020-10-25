@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
@@ -21,9 +22,6 @@ blogsRouter.get('/:id', async (request, response) => {
 })
   
 blogsRouter.post('/', async (request, response) => { 
-  const body = request.body
-  const user = await User.findById(body.userId)
-
   let blogData = request.body
   if(!request.body.likes){
     blogData = {
@@ -34,6 +32,12 @@ blogsRouter.post('/', async (request, response) => {
   if(!request.body.url || !request.body.title){
     return response.status(400).end()
   }
+  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!request.token || !decodedToken.id) {
+    return response.status(401).json({ error: 'token missing or invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+
   blogData = {
     ...blogData,
     userId: user._id
@@ -68,7 +72,6 @@ blogsRouter.put('/:id', async (request, response) => {
   const toUpdate = {likes: newLikes}
 
   const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, toUpdate, {new: true})
-  console.log(updatedBlog);
   response.json(updatedBlog)
 })
 
