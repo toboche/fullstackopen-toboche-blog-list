@@ -2,14 +2,16 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const helper = require('./test_helper')
-
+const bcrypt = require('bcrypt')
 const api = supertest(app)
 
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const { report } = require('../app')
 const { response } = require('express')
 
 beforeEach(async () => {
+    await User.deleteMany({})
     await Blog.deleteMany({})
     for (let blogData of helper.initialBlogs){
         let blog = new Blog(blogData)
@@ -51,11 +53,14 @@ test('blogs are returned as json', async () => {
   })
 
   test('a valid blog can be added', async () => {
+      const newSavedUser = await helper.saveNewUser()
+
       const newBlog = {
         title: "1 new title",
         author: "somebody",
         url: "www.asd.com",
-        likes: 11
+        likes: 11,
+        userId: newSavedUser._id
       }
 
       const response = await api.post('/api/blogs')
@@ -67,15 +72,19 @@ test('blogs are returned as json', async () => {
       expect(currentBlogsInDb)
         .toHaveLength(helper.initialBlogs.length + 1)
 
+      const {userId, ...expectedBlog} = newBlog
       expect(response.body.map(b => helper.mapToNoIds(b)))
-        .toContainEqual(newBlog)
+        .toContainEqual(expectedBlog)
   })
 
   test('likes default to 0', async () => {
+    const newSavedUser = await helper.saveNewUser()
+
     const newBlog = {
       title: "1 new title",
       author: "somebody",
-      url: "www.asd.com"
+      url: "www.asd.com",
+      userId: newSavedUser._id
     }
 
     const response = await api.post('/api/blogs')
@@ -87,8 +96,9 @@ test('blogs are returned as json', async () => {
     expect(currentBlogsInDb)
       .toHaveLength(helper.initialBlogs.length + 1)
 
+    const {userId, ...expectedBlog} = newBlog
     expect(response.body.map(b => helper.mapToNoIds(b)))
-      .toContainEqual({...newBlog, likes: 0})
+      .toContainEqual({...expectedBlog, likes: 0})
 })
 
 test('no title results in 400 when posting', async () => {
@@ -162,6 +172,39 @@ describe('update tests', () => {
     const response = await api.put(`/api/blogs/${idToDelete}`)
         .send({})
         .expect(404)
+  })
+})
+
+describe('when there is initially one user in db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', passwordHash })
+
+    await user.save()
+  })
+
+  test('creation succeeds with a fresh username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      password: 'salainen',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(200)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    expect(usernames).toContain(newUser.username)
   })
 })
 
