@@ -1,7 +1,7 @@
 const info = (...params) => {
-    if(process.env.NODE_ENV){
-      return
-    } 
+    // if(process.env.NODE_ENV){
+    //   return
+    // } 
        console.log(...params)
   }
   
