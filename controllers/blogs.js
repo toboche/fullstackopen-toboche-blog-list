@@ -1,7 +1,9 @@
+const { request } = require('express')
 const jwt = require('jsonwebtoken')
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const mongoose = require('mongoose')
 
 blogsRouter.get('/', async (request, response) => {
   const blogs = await Blog.find({})
@@ -40,7 +42,7 @@ blogsRouter.post('/', async (request, response) => {
 
   blogData = {
     ...blogData,
-    userId: user._id
+    user: user._id
   }
 
   const blog = new Blog(blogData)
@@ -56,6 +58,25 @@ blogsRouter.post('/', async (request, response) => {
 
 blogsRouter.delete('/:id', async (request, response) => {
   const idToDelete = request.params.id
+  
+  if (!request.token) {
+    return response.status(401).json({ error: 'token missing' })
+  }  const decodedToken = jwt.verify(request.token, process.env.SECRET)
+  if (!decodedToken.id) {
+    return response.status(401).json({ error: 'token invalid' })
+  }
+  const user = await User.findById(decodedToken.id)
+  var blogToDelete
+  try{
+    blogToDelete = await Blog.findOne({_id: idToDelete})
+      .populate('user', { username: 1, name: 1 })
+  }catch (e){
+    response.status(404).end()
+  }
+  if(user._id.toString() !== blogToDelete.user._id.toString()){
+    return response.status(401).json({ error: 'user not allowed' })
+  }
+
   try{
     await Blog.deleteOne({_id: idToDelete})
   }catch (e){

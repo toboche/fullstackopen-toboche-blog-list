@@ -1,6 +1,7 @@
 const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
+const e = require('express')
 
 const initialBlogs = [
   {
@@ -21,6 +22,12 @@ const newUser = {
   username: 'root',
   name: 'Superuser',
   passwordHash: 'salainen',
+}
+
+const anotherNewUser = {
+  username: 'root2',
+  name: 'Superuser2',
+  passwordHash: 'salainen2',
 }
 
 const nonExistingId = async () => {
@@ -60,10 +67,25 @@ const saveNewUser = async () => {
   return await userToSave.save()
 }
 
+const saveAnotherNewUser = async () => {
+  const userToSave = new User(anotherNewUser)
+  return await userToSave.save()
+}
+
 const getUserToken = async () => {
-  const newSavedUser = await saveNewUser()
+  const newSavedUser = await User.findOne({username: newUser.username})
   const userForToken = {
-    username: newSavedUser.username,
+    username: newUser.username,
+    id: newSavedUser._id,
+  }
+  const token = jwt.sign(userForToken, process.env.SECRET)
+  return token
+}
+
+const getAnotherUserToken = async () => {
+  const newSavedUser = await User.findOne({username: anotherNewUser.username})
+  const userForToken = {
+    username: anotherNewUser.username,
     id: newSavedUser._id,
   }
   const token = jwt.sign(userForToken, process.env.SECRET)
@@ -77,6 +99,9 @@ module.exports = {
   mapToNoIds, 
   usersInDb,
   newUser,
+  anotherNewUser,
   saveNewUser,
-  getUserToken
+  saveAnotherNewUser,
+  getUserToken,
+  getAnotherUserToken
 }

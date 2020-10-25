@@ -13,8 +13,12 @@ const { response } = require('express')
 
 beforeEach(async () => {
     await User.deleteMany({})
+    const user = await helper.saveNewUser()
+    const userId = user._id
+    const anotherUser = await helper.saveAnotherNewUser()
     await Blog.deleteMany({})
-    for (let blogData of helper.initialBlogs){
+    const blogsWithUser = helper.initialBlogs.map(blog => ({...blog, user: userId}))
+    for (let blogData of blogsWithUser){
         let blog = new Blog(blogData)
         await blog.save()
     }
@@ -79,10 +83,8 @@ test('blogs are returned as json', async () => {
   })
 
   test('likes default to 0', async () => {
-    const users = await User.find({})
-    console.log('users ', users);
     const token = await helper.getUserToken()
-    
+
     const newBlog = {
       title: "1 new title",
       author: "somebody",
@@ -130,9 +132,12 @@ test('no url results in 400 when posting', async () => {
 
 describe('delete tests', () => {
   test('inexisting id', async () => {
+    const token = await helper.getUserToken()
+
     const idToDelete = '2342342aaa'
 
     const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(404)
   })
 
@@ -143,15 +148,41 @@ describe('delete tests', () => {
         .expect(404)
   })
 
-  test('deleting the first blog works', async () => {
+  test('deleting the first blog works with valid token', async () => {
+    const token = await helper.getUserToken()
     const blogsInDb = await helper.blogsInDb()
     const idToDelete = blogsInDb[0].id
     const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
   
     const latestBlogsInDb = await helper.blogsInDb()
     expect(latestBlogsInDb)
         .toHaveLength(helper.initialBlogs.length - 1)
+  })
+
+  test('deleting doesnt work with no token', async () => {
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .expect(401)
+  
+    const latestBlogsInDb = await helper.blogsInDb()
+    expect(latestBlogsInDb)
+        .toHaveLength(helper.initialBlogs.length)
+  })
+
+  test('deleting the first blog doesnt work when not the same user as creator', async () => {
+    const token = await helper.getAnotherUserToken()
+    const blogsInDb = await helper.blogsInDb()
+    const idToDelete = blogsInDb[0].id
+    const response = await api.delete(`/api/blogs/${idToDelete}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(401)
+  
+    const latestBlogsInDb = await helper.blogsInDb()
+    expect(latestBlogsInDb)
+        .toHaveLength(helper.initialBlogs.length)
   })
 })
 
